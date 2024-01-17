@@ -34,7 +34,7 @@ stocks_info = [get_stock_info(symbol) for symbol in stocks]
 # Create a DataFrame
 df_info = pd.DataFrame({info["Symbol"]: [info["Market Cap"], info["ROE"], info["EPS"], info["P/E Ratio"]] for info in stocks_info}, index=["Market Cap", "ROE", "EPS", "P/E Ratio"])
 
-# Display the table
+# Display the table this file path is different for all users
 df_info.to_html(r"C:\Users\markc\Documents\styled_output7.html")
 
 # Step 2
@@ -80,7 +80,7 @@ df_returns = pd.DataFrame({info["Symbol"]: [info["Total 5-Year Return"]] for inf
 df_returns_styled = df_returns.style.format("{:.2f}%")
 
 # Display the styled table
-# Save the DataFrame to an HTML file
+# Save the DataFrame to an HTML file this file path is different for all users
 df_returns_styled.to_html(r"C:\Users\markc\Documents\styled_output8.html")
 
 # Step 3
@@ -175,9 +175,8 @@ df_portfolio_returns = pd.DataFrame(list(portfolio_returns.items()), columns=['W
 # Format the percentage values in the DataFrame
 df_portfolio_returns_styled = df_portfolio_returns.style.format({'Portfolio Return': '{:.2f}%'})
 
-# Display the styled table
+# Display the styled table this filepath is different for all users
 df_portfolio_returns_styled.to_html(r"C:\Users\markc\Documents\styled_output9.html")
-
 
 
 
