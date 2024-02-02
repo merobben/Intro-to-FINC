@@ -1,1 +1,208 @@
-This is code you should edit.
+# Calculating Total Weekly Return & YTD
+import yfinance as yf
+import pandas as pd
+
+def get_sector_data(symbol, start_date, end_date):
+    sector_data = yf.download(symbol, start=start_date, end=end_date)
+    return sector_data
+
+def calculate_returns(data):
+    data['Daily Return'] = data['Adj Close'].pct_change()
+
+    # Calculate weekly return using the specified formula
+    data['Weekly Return'] = (data['Close'] - data['Open'].shift(1)) / data['Open'].shift(1)
+
+    return data
+
+def main():
+    sectors = {
+        'XLK': 'Technology',
+        'XLY': 'Consumer Discretionary',
+        'XLC': 'Communication Services',
+        'XLE': 'Energy',
+        'XLF': 'Financials',
+        'XLV': 'Health Care',
+        'XLI': 'Industrials',
+        'XLB': 'Materials',
+        'XLRE': 'Real Estate',
+        'XLU': 'Utilities',
+        'XLP': 'Consumer Staples',
+        'SPY': 'S&P 500'
+    }
+
+    start_date = '2024-01-01'  # Start of the year
+    end_date = '2024-01-19'
+    week_of_interest_start = '2024-01-15'
+    week_of_interest_end = '2024-01-19'
+
+    for symbol, sector_name in sectors.items():
+        sector_data = get_sector_data(symbol, start_date, end_date)
+        sector_data = calculate_returns(sector_data)
+
+        # Calculate total return (YTD) using cumulative product of daily returns
+        ytd_return = (1 + sector_data['Daily Return']).cumprod().iloc[-1] - 1
+        print(f"{sector_name} ({symbol}) YTD Return from {start_date} to {end_date}: {ytd_return * 100:.2f}%")
+
+        # Display total weekly return for the week of interest
+        total_weekly_return = sector_data.loc[week_of_interest_start:week_of_interest_end]['Weekly Return'].sum()
+        print(f"{sector_name} ({symbol}) Total Weekly Return from {week_of_interest_start} to {week_of_interest_end}: {total_weekly_return * 100:.2f}%")
+
+if __name__ == "__main__":
+    main()
+
+# Graphical Representation - YTD
+import matplotlib.pyplot as plt
+import yfinance as yf
+
+def get_sector_data(symbol, start_date, end_date):
+    sector_data = yf.download(symbol, start=start_date, end=end_date)
+    return sector_data
+
+def calculate_returns(data):
+    data['Daily Return'] = data['Adj Close'].pct_change()
+    return data
+
+def create_simple_bar_chart(sectors):
+    start_date = '2024-01-01'
+    end_date = '2024-01-19'
+
+    ytd_returns = {}
+
+    for symbol, sector_name in sectors.items():
+        sector_data = get_sector_data(symbol, start_date, end_date)
+        sector_data = calculate_returns(sector_data)
+
+        # Calculate total return (YTD) using cumulative product of daily returns
+        ytd_return = (1 + sector_data['Daily Return']).cumprod().iloc[-1] - 1
+        ytd_returns[symbol] = ytd_return * 100
+
+    # Sort sectors by their returns
+    sorted_sectors = sorted(sectors, key=lambda x: ytd_returns[x], reverse=True)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar([sectors[s] for s in sorted_sectors], [ytd_returns[s] for s in sorted_sectors], color=['green' if ytd_returns[s] >= 0 else 'red' for s in sorted_sectors])
+    plt.axhline(0, color='black', linestyle='-', linewidth=1)# Add a solid black line at y=0
+    plt.axvline(-0.75, color='black', linestyle='-', linewidth=1)
+    plt.ylim(-10, 10)
+    plt.ylabel('Returns (%)')
+    plt.title('YTD Returns for S&P 500 Sectors', pad=0)
+    plt.yticks([-8, -4, 0, 4, 8], labels=[-8, -4, 0, 4, 8], position=(0, -0.15), rotation=0, ha='right')
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['bottom'].set_visible(False)
+    plt.gca().spines['left'].set_visible(False)
+    plt.tick_params(left=False)
+    plt.tick_params(axis='x', which='both', bottom=False)
+    
+    # Rotate x-axis labels at a 45-degree angle
+    plt.xticks(rotation=45, ha='right')
+
+    # Display the returns above the bars with adjusted vertical alignment
+    for bar in bars:
+        height = bar.get_height()
+        va = 'bottom' if height >= 0 else 'top'
+        text_position = height + 0.8 if height >= 0 else height - 0.8
+        plt.text(bar.get_x() + bar.get_width() / 2, text_position, f'{height:.2f}%', ha='center', va=va, fontsize=8, color='black', verticalalignment='baseline' if va == 'bottom' else 'top')
+    
+    plt.show()
+
+if __name__ == "__main__":
+    sectors = {
+        'XLK': 'Technology',
+        'XLY': 'Consumer Discretionary',
+        'XLC': 'Communication Services',
+        'XLE': 'Energy',
+        'XLF': 'Financials',
+        'XLV': 'Health Care',
+        'XLI': 'Industrials',
+        'XLB': 'Materials',
+        'XLRE': 'Real Estate',
+        'XLU': 'Utilities',
+        'XLP': 'Consumer Staples',
+        'SPY': 'S&P 500'
+    }
+
+    create_simple_bar_chart(sectors)
+
+#Graphical Representation - Weekly Return
+import matplotlib.pyplot as plt
+
+def get_sector_data(symbol, start_date, end_date):
+    sector_data = yf.download(symbol, start=start_date, end=end_date)
+    return sector_data
+
+def calculate_returns(data):
+    data['Daily Return'] = data['Adj Close'].pct_change()
+    data['Weekly Return'] = (data['Close'] - data['Open'].shift(1)) / data['Open'].shift(1)
+    return data
+
+def create_simple_bar_chart(sectors, return_type):
+    start_date = '2024-01-01'
+    end_date = '2024-01-19'
+    week_of_interest_start = '2024-01-16'
+    week_of_interest_end = '2024-01-19'
+
+    returns = {}
+
+    for symbol, sector_name in sectors.items():
+        sector_data = get_sector_data(symbol, start_date, end_date)
+        sector_data = calculate_returns(sector_data)
+
+        if return_type == 'YTD':
+            # Calculate total return (YTD) using cumulative product of daily returns
+            total_return = (1 + sector_data['Daily Return']).cumprod().iloc[-1] - 1
+        elif return_type == 'Weekly':
+            # Calculate total weekly return for the week of interest
+            total_return = sector_data.loc[week_of_interest_start:week_of_interest_end]['Weekly Return'].sum()
+
+        returns[symbol] = total_return * 100
+
+    # Sort sectors by their returns
+    sorted_sectors = sorted(sectors, key=lambda x: returns[x], reverse=True)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar([sectors[s] for s in sorted_sectors], [returns[s] for s in sorted_sectors], color=['green' if returns[s] >= 0 else 'red' for s in sorted_sectors])
+    plt.axhline(0, color='black', linestyle='-', linewidth=1)  # Add a solid black line at y=0
+    plt.axvline(-0.75, color='black', linestyle='-', linewidth=1)
+    plt.ylim(-10, 10)
+    plt.ylabel('Returns (%)')
+    plt.title(f'{return_type} Returns for S&P 500 Sectors', pad=0)
+    plt.yticks([-8, -4, 0, 4, 8], labels=[-8, -4, 0, 4, 8], position=(0, -0.15), rotation=0, ha='right')
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['bottom'].set_visible(False)
+    plt.gca().spines['left'].set_visible(False)
+    plt.tick_params(left=False)
+    plt.tick_params(axis='x', which='both', bottom=False)
+    
+    # Rotate x-axis labels at a 45-degree angle
+    plt.xticks(rotation=45, ha='right')
+
+    # Display the returns above/below the bars with adjusted vertical alignment
+    for bar in bars:
+        height = bar.get_height()
+        va = 'bottom' if height >= 0 else 'top'
+        text_position = height + 0.8 if height >= 0 else height - 0.8
+        plt.text(bar.get_x() + bar.get_width() / 2, text_position, f'{height:.2f}%', ha='center', va=va, fontsize=8, color='black', verticalalignment='baseline' if va == 'bottom' else 'top')
+    
+    plt.show()
+
+if __name__ == "__main__":
+    sectors = {
+        'XLK': 'Technology',
+        'XLY': 'Consumer Discretionary',
+        'XLC': 'Communication Services',
+        'XLE': 'Energy',
+        'XLF': 'Financials',
+        'XLV': 'Health Care',
+        'XLI': 'Industrials',
+        'XLB': 'Materials',
+        'XLRE': 'Real Estate',
+        'XLU': 'Utilities',
+        'XLP': 'Consumer Staples',
+        'SPY': 'S&P 500'
+    }
+
+    create_simple_bar_chart(sectors, 'Weekly')
